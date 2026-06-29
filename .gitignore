@@ -1,0 +1,10 @@
+# env — never commit real keys
+.env
+.env.local
+
+# Astro / build
+dist/
+.astro/
+
+# deps
+node_modules/

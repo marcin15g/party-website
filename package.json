@@ -1,0 +1,19 @@
+{
+  "name": "party-website",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "aos": "^2.3.4",
+    "astro": "^4.16.0",
+    "glightbox": "^3.3.1"
+  },
+  "allowScripts": {
+    "esbuild@0.21.5": true,
+    "sharp@0.33.5": true
+  }
+}

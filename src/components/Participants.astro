@@ -1,0 +1,167 @@
+---
+const bride = {
+  name: 'Panna Młoda',
+  img: 'https://placehold.co/320x400/E6CFA9/9A3F3F?text=Panna+Młoda',
+};
+
+const participants = [
+  { name: 'Uczestniczka 1', img: 'https://placehold.co/260x320/E6CFA9/9A3F3F?text=1' },
+  { name: 'Uczestniczka 2', img: 'https://placehold.co/260x320/E6CFA9/9A3F3F?text=2' },
+  { name: 'Uczestniczka 3', img: 'https://placehold.co/260x320/E6CFA9/9A3F3F?text=3' },
+  { name: 'Uczestniczka 4', img: 'https://placehold.co/260x320/E6CFA9/9A3F3F?text=4' },
+  { name: 'Uczestniczka 5', img: 'https://placehold.co/260x320/E6CFA9/9A3F3F?text=5' },
+];
+---
+
+<section class="participants-section" id="participants">
+  <!-- Bride -->
+  <div class="bride-wrapper" data-aos="fade-up">
+    <p class="section-label">PANNA MŁODA</p>
+    <div class="antique-frame bride-frame">
+      <img src={bride.img} alt={bride.name} />
+    </div>
+  </div>
+
+  <!-- Divider -->
+  <div class="divider" data-aos="fade-up">
+    <span>POZOSTAŁE UCZESTNICZKI</span>
+  </div>
+
+  <!-- Participants grid -->
+  <div class="participants-grid">
+    {participants.map((p, i) => (
+      <div class="participant" data-aos="fade-up" data-aos-delay={i * 80}>
+        <div class="antique-frame participant-frame">
+          <img src={p.img} alt={p.name} />
+        </div>
+        <p class="participant-name">{p.name}</p>
+      </div>
+    ))}
+  </div>
+</section>
+
+<style>
+  .participants-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3rem;
+    background-color: var(--color-cream);
+    max-width: 100%;
+    padding: 5rem 1.5rem;
+  }
+
+  /* ── Section label ── */
+  .section-label {
+    font-family: var(--font-serif);
+    font-size: clamp(1rem, 2.5vw, 1.4rem);
+    letter-spacing: 0.3em;
+    color: var(--color-mid);
+    text-align: center;
+    margin-bottom: 1.2rem;
+    font-style: italic;
+  }
+
+  /* ── Antique frame ── */
+  .antique-frame {
+    position: relative;
+    display: inline-block;
+    padding: 10px;
+    background: var(--color-light);
+  }
+
+  .antique-frame::before,
+  .antique-frame::after {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    border: 2px solid var(--color-mid);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .antique-frame::after {
+    inset: 8px;
+    border-color: var(--color-dark);
+    border-width: 1px;
+  }
+
+  .antique-frame img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: sepia(15%);
+  }
+
+  /* ── Bride frame ── */
+  .bride-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .bride-frame {
+    width: min(320px, 80vw);
+    aspect-ratio: 4 / 5;
+    box-shadow: 0 8px 32px rgba(125, 48, 48, 0.18);
+  }
+
+  /* ── Divider ── */
+  .divider {
+    width: 100%;
+    max-width: 700px;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .divider::before,
+  .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--color-mid);
+    opacity: 0.6;
+  }
+
+  .divider span {
+    font-family: var(--font-serif);
+    font-size: clamp(0.8rem, 2vw, 1.1rem);
+    letter-spacing: 0.25em;
+    color: var(--color-dark);
+    white-space: nowrap;
+    font-style: italic;
+  }
+
+  /* ── Participants grid ── */
+  .participants-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2rem;
+    width: 100%;
+    max-width: 1000px;
+  }
+
+  .participant {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.8rem;
+  }
+
+  .participant-frame {
+    width: min(180px, 42vw);
+    aspect-ratio: 4 / 5;
+    box-shadow: 0 4px 16px rgba(125, 48, 48, 0.12);
+  }
+
+  .participant-name {
+    font-family: var(--font-serif);
+    font-size: 0.95rem;
+    color: var(--color-dark);
+    font-style: italic;
+    letter-spacing: 0.05em;
+  }
+</style>

@@ -1,0 +1,222 @@
+---
+const items = [
+  { category: 'Dokumenty', entries: ['Dowód osobisty lub paszport', 'Ubezpieczenie podróżne', 'Karta EKUZ'] },
+  { category: 'Bagaż', entries: ['Bagaż podręczny (maks. 10 kg)', 'Strój kąpielowy (min. 2 szt.)', 'Odzież na wieczór — elegancja obowiązkowa!', 'Wygodne buty do chodzenia', 'Sandały i szpilki'] },
+  { category: 'Plaża & Słońce', entries: ['Krem z filtrem SPF 50+', 'Okulary przeciwsłoneczne', 'Ręcznik plażowy', 'Kapelusz lub czapka'] },
+  { category: 'Finanse & Elektronika', entries: ['Gotówka (euro mile widziane)', 'Karta płatnicza', 'Ładowarka i power bank', 'Słuchawki'] },
+  { category: 'Na wszelki wypadek', entries: ['Podstawowe leki i plastry', 'Tabletki na ból głowy 🙂', 'Dobry humor i chęć do zabawy!'] },
+];
+---
+
+<section class="essentials-section" id="essentials">
+  <div class="inner">
+    <!-- Left: list -->
+    <div class="list-col" data-aos="fade-right">
+      <p class="eyebrow">Co zabrać?</p>
+      <h2 class="title">Niezbędnik wyjazdowy</h2>
+      <div class="title-rule"></div>
+
+      <div class="categories">
+        {items.map(cat => (
+          <div class="category">
+            <p class="cat-name">{cat.category}</p>
+            <ul class="item-list">
+              {cat.entries.map(entry => (
+                <li class="item">
+                  <span class="bullet" aria-hidden="true">◆</span>
+                  {entry}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <!-- Right: suitcase SVG -->
+    <div class="graphic-col" data-aos="fade-left" data-aos-delay="100">
+      <svg
+        class="suitcase-svg"
+        viewBox="0 0 320 380"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-label="Walizka"
+        role="img"
+      >
+        <!-- Handle -->
+        <rect x="110" y="20" width="100" height="44" rx="22" stroke="#C4887A" stroke-width="6" fill="none"/>
+        <rect x="125" y="38" width="70" height="10" rx="5" fill="#1A1412" opacity="0.15"/>
+
+        <!-- Main body -->
+        <rect x="30" y="64" width="260" height="200" rx="14" fill="#7D3030"/>
+        <!-- Body shadow / depth -->
+        <rect x="30" y="64" width="260" height="200" rx="14" fill="url(#bodyGrad)"/>
+
+        <!-- Corner reinforcements -->
+        <rect x="30" y="64" width="20" height="20" rx="4" fill="#5A2020"/>
+        <rect x="270" y="64" width="20" height="20" rx="4" fill="#5A2020"/>
+        <rect x="30" y="244" width="20" height="20" rx="4" fill="#5A2020"/>
+        <rect x="270" y="244" width="20" height="20" rx="4" fill="#5A2020"/>
+
+        <!-- Horizontal straps -->
+        <rect x="30" y="108" width="260" height="12" fill="#5A2020"/>
+        <rect x="30" y="208" width="260" height="12" fill="#5A2020"/>
+
+        <!-- Vertical center seam -->
+        <line x1="160" y1="64" x2="160" y2="264" stroke="#5A2020" stroke-width="4"/>
+
+        <!-- Clasp plate -->
+        <rect x="128" y="148" width="64" height="32" rx="4" fill="#C4887A"/>
+        <rect x="134" y="154" width="52" height="20" rx="3" fill="#E8CCBC"/>
+        <!-- Clasp lock -->
+        <rect x="151" y="158" width="18" height="12" rx="2" fill="#7D3030"/>
+        <circle cx="160" cy="164" r="3" fill="#C4887A"/>
+
+        <!-- Label tag -->
+        <rect x="52" y="134" width="56" height="36" rx="3" fill="#F4EAE0" stroke="#C4887A" stroke-width="1.5"/>
+        <line x1="52" y1="145" x2="108" y2="145" stroke="#C4887A" stroke-width="1" opacity="0.5"/>
+        <line x1="52" y1="155" x2="108" y2="155" stroke="#C4887A" stroke-width="1" opacity="0.5"/>
+        <!-- Tag string -->
+        <path d="M80 134 Q74 122 68 116" stroke="#C4887A" stroke-width="1.5" stroke-dasharray="3 2"/>
+
+        <!-- Stickers -->
+        <!-- Round sticker: SPLIT -->
+        <circle cx="220" cy="172" r="24" fill="#E8CCBC" stroke="#C4887A" stroke-width="1.5"/>
+        <circle cx="220" cy="172" r="19" stroke="#C4887A" stroke-width="0.75" stroke-dasharray="3 2"/>
+        <text x="220" y="169" text-anchor="middle" font-family="Georgia, serif" font-size="8" fill="#7D3030" font-style="italic">Split</text>
+        <text x="220" y="180" text-anchor="middle" font-family="Georgia, serif" font-size="6" fill="#7D3030">2026</text>
+
+        <!-- Wheels -->
+        <ellipse cx="80" cy="270" rx="20" ry="12" fill="#1A1412"/>
+        <ellipse cx="80" cy="270" rx="14" ry="8" fill="#333"/>
+        <circle cx="80" cy="270" r="4" fill="#C4887A"/>
+
+        <ellipse cx="240" cy="270" rx="20" ry="12" fill="#1A1412"/>
+        <ellipse cx="240" cy="270" rx="14" ry="8" fill="#333"/>
+        <circle cx="240" cy="270" r="4" fill="#C4887A"/>
+
+        <!-- Telescoping handle (extended) -->
+        <rect x="130" y="270" width="8" height="60" rx="3" fill="#5A2020"/>
+        <rect x="182" y="270" width="8" height="60" rx="3" fill="#5A2020"/>
+        <rect x="126" y="324" width="76" height="10" rx="4" fill="#7D3030"/>
+
+        <!-- Decorative script text -->
+        <text x="160" y="355" text-anchor="middle" font-family="Georgia, serif" font-style="italic" font-size="13" fill="#7D3030" opacity="0.7">bon voyage</text>
+
+        <defs>
+          <linearGradient id="bodyGrad" x1="30" y1="64" x2="290" y2="264" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="white" stop-opacity="0.08"/>
+            <stop offset="100%" stop-color="black" stop-opacity="0.15"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<style>
+  .essentials-section {
+    background-color: var(--color-darkest);
+    max-width: 100%;
+    padding: 5rem 2rem;
+  }
+
+  .inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+  }
+
+  @media (max-width: 768px) {
+    .inner { grid-template-columns: 1fr; gap: 3rem; }
+    .graphic-col { order: -1; display: flex; justify-content: center; }
+    .suitcase-svg { max-width: 240px; }
+  }
+
+  /* ── Header ── */
+  .eyebrow {
+    font-size: 0.78rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--color-mid);
+    margin-bottom: 0.5rem;
+    font-family: var(--font-sans);
+  }
+
+  .title {
+    font-family: var(--font-serif);
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    color: var(--color-cream);
+    font-style: italic;
+    font-weight: 400;
+  }
+
+  .title-rule {
+    width: 50px;
+    height: 1px;
+    background: var(--color-mid);
+    margin: 0.8rem 0 2rem;
+    opacity: 0.6;
+  }
+
+  /* ── Categories ── */
+  .categories {
+    display: flex;
+    flex-direction: column;
+    gap: 1.4rem;
+  }
+
+  .category {}
+
+  .cat-name {
+    font-family: var(--font-serif);
+    font-size: 0.8rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-mid);
+    margin-bottom: 0.5rem;
+    font-style: italic;
+  }
+
+  .item-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .item {
+    font-family: var(--font-sans);
+    font-size: 0.92rem;
+    color: var(--color-light);
+    font-weight: 300;
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    line-height: 1.5;
+  }
+
+  .bullet {
+    color: var(--color-mid);
+    font-size: 0.4rem;
+    flex-shrink: 0;
+    position: relative;
+    top: -0.1em;
+  }
+
+  /* ── SVG ── */
+  .graphic-col {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .suitcase-svg {
+    width: 100%;
+    max-width: 300px;
+    filter: drop-shadow(0 12px 40px rgba(196, 136, 122, 0.2));
+  }
+</style>

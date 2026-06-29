@@ -1,0 +1,342 @@
+---
+const flights = {
+  outbound: {
+    from: { code: 'WAW', city: 'Warszawa', airport: 'Lotnisko Chopina' },
+    to:   { code: 'SPU', city: 'Split', airport: 'Lotnisko Split' },
+    date: 'TBD – Wrzesień 2026',
+    departure: '--:--',
+    arrival:   '--:--',
+  },
+  return: {
+    from: { code: 'SPU', city: 'Split', airport: 'Lotnisko Split' },
+    to:   { code: 'WAW', city: 'Warszawa', airport: 'Lotnisko Chopina' },
+    date: 'TBD – Wrzesień 2026',
+    departure: '--:--',
+    arrival:   '--:--',
+  },
+};
+
+// September 2026: starts on Tuesday (index 1, Mon=0)
+const startOffset = 1;
+const daysInMonth = 30;
+const highlightedDays = new Set([18, 19, 20, 21]);
+const dayNames = ['Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'Sb', 'Nd'];
+
+type CalCell = { day: number | null; highlighted: boolean };
+const cells: CalCell[] = [];
+for (let i = 0; i < startOffset; i++) cells.push({ day: null, highlighted: false });
+for (let d = 1; d <= daysInMonth; d++) {
+  cells.push({ day: d, highlighted: highlightedDays.has(d) });
+}
+while (cells.length % 7 !== 0) cells.push({ day: null, highlighted: false });
+---
+
+<section class="flights-section" id="flights">
+  <div class="inner">
+    <!-- Left: flight info -->
+    <div class="flight-info" data-aos="fade-right">
+      <p class="eyebrow">Jak tam dotrzemy?</p>
+      <h2 class="title">Szczegóły lotu</h2>
+      <div class="title-rule"></div>
+
+      {[flights.outbound, flights.return].map((f, i) => (
+        <div class="flight-card">
+          <p class="flight-label">{i === 0 ? 'Lot tam' : 'Lot powrotny'}</p>
+          <div class="route">
+            <div class="airport">
+              <span class="iata">{f.from.code}</span>
+              <span class="city">{f.from.city}</span>
+              <span class="airport-name">{f.from.airport}</span>
+            </div>
+            <div class="arrow">
+              <svg viewBox="0 0 60 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M0 8h54M46 2l8 6-8 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M14 4l6 4-6 4" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" opacity="0.4"/>
+              </svg>
+            </div>
+            <div class="airport">
+              <span class="iata">{f.to.code}</span>
+              <span class="city">{f.to.city}</span>
+              <span class="airport-name">{f.to.airport}</span>
+            </div>
+          </div>
+          <div class="times">
+            <div class="time-block">
+              <span class="time-label">Odlot</span>
+              <span class="time-value">{f.departure}</span>
+            </div>
+            <span class="time-sep">→</span>
+            <div class="time-block">
+              <span class="time-label">Przylot</span>
+              <span class="time-value">{f.arrival}</span>
+            </div>
+            <div class="date-pill">{f.date}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <!-- Right: calendar -->
+    <div class="calendar-wrapper" data-aos="fade-left" data-aos-delay="120">
+      <p class="cal-month">Wrzesień 2026</p>
+      <div class="calendar">
+        {dayNames.map(name => (
+          <div class="cal-header">{name}</div>
+        ))}
+        {cells.map(cell => (
+          <div class:list={['cal-day', { empty: !cell.day, highlighted: cell.highlighted }]}>
+            {cell.day ?? ''}
+          </div>
+        ))}
+      </div>
+      <p class="cal-legend">
+        <span class="legend-dot"></span> Nasz wyjazd
+      </p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .flights-section {
+    background-color: var(--color-cream);
+    max-width: 100%;
+    padding: 5rem 2rem;
+  }
+
+  .inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: start;
+  }
+
+  @media (max-width: 768px) {
+    .inner { grid-template-columns: 1fr; gap: 3rem; }
+  }
+
+  /* ── Left: flight info ── */
+  .eyebrow {
+    font-size: 0.78rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--color-mid);
+    margin-bottom: 0.5rem;
+    font-family: var(--font-sans);
+  }
+
+  .title {
+    font-family: var(--font-serif);
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    color: var(--color-dark);
+    font-style: italic;
+    font-weight: 400;
+  }
+
+  .title-rule {
+    width: 50px;
+    height: 1px;
+    background: var(--color-mid);
+    margin: 0.8rem 0 2rem;
+  }
+
+  .flight-card {
+    border: 1px solid var(--color-light);
+    padding: 1.4rem 1.6rem;
+    margin-bottom: 1.2rem;
+    background: white;
+    position: relative;
+  }
+
+  .flight-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--color-mid);
+  }
+
+  .flight-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    color: var(--color-mid);
+    margin-bottom: 1rem;
+    font-family: var(--font-sans);
+  }
+
+  .route {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .airport {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .iata {
+    font-family: var(--font-serif);
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--color-dark);
+    line-height: 1;
+  }
+
+  .city {
+    font-size: 0.8rem;
+    color: var(--color-dark);
+    font-weight: 600;
+    margin-top: 0.2rem;
+  }
+
+  .airport-name {
+    font-size: 0.7rem;
+    color: var(--color-mid);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .arrow {
+    flex: 1;
+    color: var(--color-mid);
+    padding: 0 0.25rem;
+  }
+
+  .arrow svg {
+    width: 100%;
+    height: 16px;
+  }
+
+  .times {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+  }
+
+  .time-block {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .time-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--color-mid);
+  }
+
+  .time-value {
+    font-family: var(--font-serif);
+    font-size: 1.3rem;
+    color: var(--color-dark);
+  }
+
+  .time-sep {
+    color: var(--color-mid);
+    font-size: 0.9rem;
+  }
+
+  .date-pill {
+    margin-left: auto;
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    color: var(--color-dark);
+    background: var(--color-light);
+    padding: 0.3rem 0.7rem;
+    font-family: var(--font-sans);
+  }
+
+  /* ── Right: calendar ── */
+  .calendar-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 3.8rem;
+  }
+
+  @media (max-width: 768px) {
+    .calendar-wrapper { padding-top: 0; }
+  }
+
+  .cal-month {
+    font-family: var(--font-serif);
+    font-size: 1.4rem;
+    font-style: italic;
+    color: var(--color-dark);
+    margin-bottom: 1.2rem;
+    letter-spacing: 0.05em;
+  }
+
+  .calendar {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    width: 100%;
+    max-width: 360px;
+  }
+
+  .cal-header {
+    text-align: center;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-mid);
+    padding-bottom: 0.4rem;
+    font-family: var(--font-sans);
+  }
+
+  .cal-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-sans);
+    font-size: 0.9rem;
+    color: var(--color-dark);
+    border: 1px solid transparent;
+    transition: background 0.2s;
+  }
+
+  .cal-day.empty {
+    border-color: transparent;
+  }
+
+  .cal-day:not(.empty):not(.highlighted) {
+    border-color: var(--color-light);
+  }
+
+  .cal-day.highlighted {
+    background: var(--color-dark);
+    color: var(--color-cream);
+    font-weight: 700;
+    border-color: var(--color-dark);
+  }
+
+  .cal-legend {
+    margin-top: 1rem;
+    font-size: 0.78rem;
+    color: var(--color-mid);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-sans);
+    letter-spacing: 0.08em;
+  }
+
+  .legend-dot {
+    width: 12px;
+    height: 12px;
+    background: var(--color-dark);
+    display: inline-block;
+    flex-shrink: 0;
+  }
+</style>

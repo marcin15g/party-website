@@ -1,0 +1,138 @@
+---
+const photos = [
+  { src: 'https://placehold.co/600x400/E8CCBC/7D3030?text=Split+1', alt: 'Split - zdjęcie 1' },
+  { src: 'https://placehold.co/600x400/E8CCBC/7D3030?text=Split+2', alt: 'Split - zdjęcie 2' },
+  { src: 'https://placehold.co/600x400/E8CCBC/7D3030?text=Split+3', alt: 'Split - zdjęcie 3' },
+  { src: 'https://placehold.co/600x400/E8CCBC/7D3030?text=Split+4', alt: 'Split - zdjęcie 4' },
+];
+---
+
+<section class="location-section" id="location">
+  <div class="section-header" data-aos="fade-up">
+    <p class="eyebrow">Gdzie jedziemy?</p>
+    <h2 class="title">Split, Chorwacja</h2>
+    <div class="title-rule"></div>
+  </div>
+
+  <div class="content-grid">
+    <!-- Map -->
+    <div class="map-wrapper" data-aos="fade-right">
+      <iframe
+        title="Mapa Split"
+        src="https://maps.google.com/maps?q=Split,+Croatia&z=13&output=embed"
+        width="100%"
+        height="100%"
+        style="border:0;"
+        allowfullscreen
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"
+      ></iframe>
+    </div>
+
+    <!-- Photo grid -->
+    <div class="photo-grid" data-aos="fade-left" data-aos-delay="100">
+      {photos.map((photo) => (
+        <div class="photo-item">
+          <img src={photo.src} alt={photo.alt} />
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .location-section {
+    max-width: 100%;
+    padding: 5rem 2rem;
+    background-color: var(--color-darkest);
+  }
+
+  /* ── Header ── */
+  .section-header {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+
+  .eyebrow {
+    font-family: var(--font-sans);
+    font-size: 0.8rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--color-mid);
+    margin-bottom: 0.6rem;
+  }
+
+  .title {
+    font-family: var(--font-serif);
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    color: var(--color-cream);
+    font-style: italic;
+    font-weight: 400;
+  }
+
+  .title-rule {
+    width: 60px;
+    height: 1px;
+    background: var(--color-mid);
+    margin: 1rem auto 0;
+  }
+
+  /* ── Two-column grid ── */
+  .content-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    max-width: 1100px;
+    margin: 0 auto;
+    align-items: stretch;
+    min-height: 420px;
+  }
+
+  @media (max-width: 768px) {
+    .content-grid {
+      grid-template-columns: 1fr;
+      min-height: unset;
+    }
+  }
+
+  /* ── Map ── */
+  .map-wrapper {
+    border: 1px solid rgba(196, 136, 122, 0.25);
+    overflow: hidden;
+    min-height: 420px;
+  }
+
+  .map-wrapper iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 420px;
+    filter: grayscale(30%) sepia(20%);
+  }
+
+  /* ── Photo grid ── */
+  .photo-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 0.75rem;
+  }
+
+  .photo-item {
+    overflow: hidden;
+    aspect-ratio: 3 / 2;
+  }
+
+  .photo-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.5s ease;
+    filter: sepia(10%);
+  }
+
+  .photo-item:hover img {
+    transform: scale(1.05);
+  }
+</style>

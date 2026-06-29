@@ -1,0 +1,335 @@
+---
+const API_KEY   = import.meta.env.PUBLIC_GOOGLE_API_KEY  ?? '';
+const FOLDER_ID = import.meta.env.PUBLIC_DRIVE_FOLDER_ID ?? '';
+const configured = !!(API_KEY && FOLDER_ID);
+const driveUrl = FOLDER_ID
+  ? `https://drive.google.com/drive/folders/${FOLDER_ID}`
+  : 'https://drive.google.com';
+---
+
+<section class="gallery-section" id="gallery">
+  <div class="section-header" data-aos="fade-up">
+    <p class="eyebrow">Wspomnienia</p>
+    <h2 class="title">Galeria zdjęć</h2>
+    <div class="title-rule"></div>
+    <p class="subtitle">
+      Wszystkie zdjęcia z wyjazdu w jednym miejscu.
+      Dodaj swoje wprost z telefonu!
+    </p>
+  </div>
+
+  {!configured ? (
+    <!-- Not yet configured — shown only during dev -->
+    <div class="not-configured" data-aos="fade-up">
+      <div class="nc-icon">📁</div>
+      <p class="nc-title">Galeria jeszcze nie skonfigurowana</p>
+      <p class="nc-desc">Ustaw <code>PUBLIC_GOOGLE_API_KEY</code> i <code>PUBLIC_DRIVE_FOLDER_ID</code> w pliku <code>.env</code></p>
+    </div>
+  ) : (
+    <>
+      <!-- Loading state -->
+      <div id="gallery-loading" class="gallery-loading" data-aos="fade-up">
+        <div class="spinner"></div>
+        <p>Ładowanie zdjęć…</p>
+      </div>
+
+      <!-- Error state -->
+      <div id="gallery-error" class="gallery-error" hidden>
+        <p id="gallery-error-msg"></p>
+      </div>
+
+      <!-- Empty state -->
+      <div id="gallery-empty" class="gallery-empty" hidden data-aos="fade-up">
+        <div class="empty-icon">🌅</div>
+        <p>Tutaj wylądują Wasze wspomnienia.<br/>Na razie folder jest pusty.</p>
+      </div>
+
+      <!-- Photo grid -->
+      <div id="gallery-grid" class="photo-grid" hidden></div>
+
+      <!-- Config passed via data attributes (avoids define:vars + import conflict) -->
+      <div
+        id="gallery-config"
+        data-api-key={API_KEY}
+        data-folder-id={FOLDER_ID}
+        hidden
+      ></div>
+    </>
+  )}
+
+  <!-- Drive CTA -->
+  <div class="drive-cta" data-aos="fade-up">
+    <a href={driveUrl} target="_blank" rel="noopener noreferrer" class="drive-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 2L3 7l4 7h10l4-7L12 2z"/>
+        <path d="M7 14l-4 7h18l-4-7"/>
+        <path d="M16 9l-4 7"/>
+      </svg>
+      Otwórz folder Google Drive
+    </a>
+    <p class="drive-hint">Przeciągnij swoje zdjęcia do folderu, aby pojawiły się tutaj</p>
+  </div>
+</section>
+
+<script>
+  import GLightbox from 'glightbox';
+  import 'glightbox/dist/css/glightbox.css';
+
+  const configEl = document.getElementById('gallery-config');
+  if (configEl) {
+    const API_KEY   = configEl.dataset.apiKey   ?? '';
+    const FOLDER_ID = configEl.dataset.folderId ?? '';
+
+    const grid     = document.getElementById('gallery-grid');
+    const loading  = document.getElementById('gallery-loading');
+    const errorEl  = document.getElementById('gallery-error');
+    const errorMsg = document.getElementById('gallery-error-msg');
+    const emptyEl  = document.getElementById('gallery-empty');
+
+    const thumb = (id: string) => `https://drive.google.com/thumbnail?id=${id}&sz=w600`;
+    const full  = (id: string) => `https://drive.google.com/thumbnail?id=${id}&sz=w1600`;
+
+    async function loadPhotos() {
+      try {
+        const url = new URL('https://www.googleapis.com/drive/v3/files');
+        url.searchParams.set('q',
+          `'${FOLDER_ID}' in parents and mimeType contains 'image/' and trashed = false`
+        );
+        url.searchParams.set('key', API_KEY);
+        url.searchParams.set('fields', 'files(id,name)');
+        url.searchParams.set('orderBy', 'createdTime desc');
+        url.searchParams.set('pageSize', '100');
+
+        const res = await fetch(url.toString());
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          throw new Error((body as any)?.error?.message ?? `HTTP ${res.status}`);
+        }
+        const data = await res.json();
+        const files: { id: string; name: string }[] = data.files ?? [];
+
+        loading!.hidden = true;
+
+        if (files.length === 0) {
+          emptyEl!.hidden = false;
+          return;
+        }
+
+        files.forEach(file => {
+          const a = document.createElement('a');
+          a.href = full(file.id);
+          a.className = 'glightbox photo-item';
+          a.dataset.gallery = 'trip-photos';
+          a.dataset.type = 'image';
+          a.dataset.title = file.name;
+
+          const img = document.createElement('img');
+          img.src = thumb(file.id);
+          img.alt = file.name;
+          img.loading = 'lazy';
+
+          a.appendChild(img);
+          grid!.appendChild(a);
+        });
+
+        grid!.hidden = false;
+
+        GLightbox({
+          selector: '.glightbox',
+          touchNavigation: true,
+          loop: true,
+          autoplayVideos: false,
+        });
+
+      } catch (err: any) {
+        loading!.hidden = true;
+        errorMsg!.textContent = `Nie udało się załadować zdjęć: ${err.message}`;
+        errorEl!.hidden = false;
+        console.error('[Gallery]', err);
+      }
+    }
+
+    loadPhotos();
+  }
+</script>
+
+<style>
+  .gallery-section {
+    background-color: var(--color-cream);
+    max-width: 100%;
+    padding: 5rem 2rem 4rem;
+  }
+
+  /* ── Header ── */
+  .section-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    max-width: 600px;
+    margin-inline: auto;
+    margin-bottom: 3rem;
+  }
+
+  .eyebrow {
+    font-size: 0.78rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--color-mid);
+    margin-bottom: 0.5rem;
+    font-family: var(--font-sans);
+  }
+
+  .title {
+    font-family: var(--font-serif);
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    color: var(--color-dark);
+    font-style: italic;
+    font-weight: 400;
+  }
+
+  .title-rule {
+    width: 50px;
+    height: 1px;
+    background: var(--color-mid);
+    margin: 0.8rem auto 1rem;
+    opacity: 0.5;
+  }
+
+  .subtitle {
+    font-family: var(--font-sans);
+    font-size: 0.9rem;
+    color: var(--color-dark);
+    opacity: 0.7;
+    line-height: 1.6;
+  }
+
+  /* ── Photo grid ── */
+  .photo-grid {
+    columns: 4 200px;
+    column-gap: 0.6rem;
+    max-width: 1100px;
+    margin: 0 auto 3rem;
+  }
+
+  @media (max-width: 600px) {
+    .photo-grid { columns: 2 140px; }
+  }
+
+  .photo-item {
+    display: block;
+    break-inside: avoid;
+    margin-bottom: 0.6rem;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .photo-item img {
+    width: 100%;
+    display: block;
+    object-fit: cover;
+    transition: transform 0.4s ease, filter 0.3s ease;
+    filter: sepia(8%);
+  }
+
+  .photo-item:hover img {
+    transform: scale(1.04);
+    filter: sepia(0%);
+  }
+
+  /* ── States ── */
+  .gallery-loading,
+  .gallery-error,
+  .gallery-empty,
+  .not-configured {
+    text-align: center;
+    padding: 3rem 1rem;
+    max-width: 500px;
+    margin: 0 auto 3rem;
+    font-family: var(--font-sans);
+    color: var(--color-dark);
+  }
+
+  .spinner {
+    width: 36px;
+    height: 36px;
+    border: 2px solid var(--color-light);
+    border-top-color: var(--color-mid);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 1rem;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .gallery-loading p,
+  .gallery-empty p,
+  .gallery-error p {
+    font-size: 0.9rem;
+    opacity: 0.7;
+    line-height: 1.6;
+  }
+
+  .gallery-error p { color: var(--color-dark); }
+
+  .empty-icon,
+  .nc-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+
+  .nc-title {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .nc-desc {
+    font-size: 0.85rem;
+    opacity: 0.65;
+    line-height: 1.6;
+  }
+
+  .nc-desc code {
+    background: var(--color-light);
+    padding: 0.1em 0.4em;
+    font-size: 0.8em;
+    border-radius: 2px;
+  }
+
+  /* ── Drive CTA ── */
+  .drive-cta {
+    text-align: center;
+    margin-top: 1rem;
+  }
+
+  .drive-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.85rem 2rem;
+    background: var(--color-dark);
+    color: var(--color-cream);
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: background 0.25s ease, transform 0.2s ease;
+  }
+
+  .drive-btn svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+  }
+
+  .drive-btn:hover {
+    background: var(--color-darkest);
+    transform: translateY(-1px);
+  }
+
+  .drive-hint {
+    margin-top: 0.75rem;
+    font-size: 0.78rem;
+    color: var(--color-mid);
+    font-family: var(--font-sans);
+    letter-spacing: 0.04em;
+  }
+</style>

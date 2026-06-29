@@ -1,0 +1,156 @@
+---
+const TARGET_ISO = '2026-09-11T19:20:00+02:00';
+---
+
+<section class="countdown-section" id="countdown">
+  <div class="overlay">
+    <p class="countdown-label" data-aos="fade-down">ZACZYNAMY ZA:</p>
+    <div class="countdown-grid" id="countdown-grid" data-aos="fade-up" data-aos-delay="100">
+      <div class="unit">
+        <span class="value" id="cd-days">00</span>
+        <span class="name">dni</span>
+      </div>
+      <div class="separator">:</div>
+      <div class="unit">
+        <span class="value" id="cd-hours">00</span>
+        <span class="name">godzin</span>
+      </div>
+      <div class="separator">:</div>
+      <div class="unit">
+        <span class="value" id="cd-minutes">00</span>
+        <span class="name">minut</span>
+      </div>
+      <div class="separator">:</div>
+      <div class="unit">
+        <span class="value" id="cd-seconds">00</span>
+        <span class="name">sekund</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script define:vars={{ TARGET_ISO }}>
+  const target = new Date(TARGET_ISO).getTime();
+
+  function pad(n) {
+    return String(n).padStart(2, '0');
+  }
+
+  function tick() {
+    const now = Date.now();
+    const diff = target - now;
+
+    if (diff <= 0) {
+      document.getElementById('countdown-grid').innerHTML =
+        '<p class="started">Zaczęłyśmy! 🎉</p>';
+      return;
+    }
+
+    const days    = Math.floor(diff / 86400000);
+    const hours   = Math.floor((diff % 86400000) / 3600000);
+    const minutes = Math.floor((diff % 3600000)  / 60000);
+    const seconds = Math.floor((diff % 60000)    / 1000);
+
+    document.getElementById('cd-days').textContent    = pad(days);
+    document.getElementById('cd-hours').textContent   = pad(hours);
+    document.getElementById('cd-minutes').textContent = pad(minutes);
+    document.getElementById('cd-seconds').textContent = pad(seconds);
+  }
+
+  tick();
+  setInterval(tick, 1000);
+</script>
+
+<style>
+  .countdown-section {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    max-width: 100%;
+    padding: 0;
+    background-image: url('/bg.png');
+    background-size: cover;
+    background-position: center top;
+    background-repeat: no-repeat;
+  }
+
+  /* Dark gradient overlay so text stays readable over the painting */
+  .overlay {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 100vh;
+    padding: 3rem 1.5rem;
+    background: linear-gradient(
+      to bottom,
+      rgba(26, 20, 18, 0.45) 0%,
+      rgba(26, 20, 18, 0.60) 60%,
+      rgba(26, 20, 18, 0.75) 100%
+    );
+    text-align: center;
+  }
+
+  .countdown-label {
+    font-family: var(--font-serif);
+    font-size: clamp(1.2rem, 3.5vw, 2rem);
+    letter-spacing: 0.3em;
+    color: var(--color-light);
+    margin-bottom: 2.5rem;
+    font-style: italic;
+    text-shadow: 0 2px 12px rgba(26, 20, 18, 0.7);
+  }
+
+  .countdown-grid {
+    display: flex;
+    align-items: flex-start;
+    gap: clamp(0.5rem, 2vw, 2rem);
+  }
+
+  .unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .value {
+    font-family: var(--font-serif);
+    font-size: clamp(3rem, 10vw, 7rem);
+    font-weight: 700;
+    color: var(--color-cream);
+    line-height: 1;
+    min-width: 2ch;
+    text-align: center;
+    text-shadow: 0 2px 20px rgba(26, 20, 18, 0.8);
+  }
+
+  .name {
+    font-family: var(--font-sans);
+    font-size: clamp(0.65rem, 1.5vw, 0.9rem);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-mid);
+    font-weight: 300;
+  }
+
+  .separator {
+    font-family: var(--font-serif);
+    font-size: clamp(2.5rem, 8vw, 5.5rem);
+    color: var(--color-mid);
+    line-height: 1.1;
+    padding-top: 0.1em;
+    user-select: none;
+    text-shadow: 0 2px 12px rgba(26, 20, 18, 0.6);
+  }
+
+  .started {
+    font-family: var(--font-serif);
+    font-size: 2rem;
+    color: var(--color-cream);
+  }
+</style>
