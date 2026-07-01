@@ -54,6 +54,18 @@ const driveUrl = FOLDER_ID
         data-folder-id={FOLDER_ID}
         hidden
       ></div>
+
+      <!-- Lightbox -->
+      <dialog id="gallery-lightbox" class="lightbox">
+        <button type="button" class="lightbox-close" aria-label="Zamknij">✕</button>
+        <button type="button" class="lightbox-nav lightbox-prev" aria-label="Poprzednie zdjęcie">‹</button>
+        <button type="button" class="lightbox-nav lightbox-next" aria-label="Następne zdjęcie">›</button>
+        <div class="lightbox-body">
+          <div class="lightbox-spinner"></div>
+          <img class="lightbox-img" alt="" hidden />
+          <p class="lightbox-error" hidden>Nie udało się załadować zdjęcia. Spróbuj ponownie za chwilę.</p>
+        </div>
+      </dialog>
     </>
   )}
 
@@ -72,9 +84,6 @@ const driveUrl = FOLDER_ID
 </section>
 
 <script>
-  import GLightbox from 'glightbox';
-  import 'glightbox/dist/css/glightbox.css';
-
   const configEl = document.getElementById('gallery-config');
   if (configEl) {
     const API_KEY   = configEl.dataset.apiKey   ?? '';
@@ -86,8 +95,100 @@ const driveUrl = FOLDER_ID
     const errorMsg = document.getElementById('gallery-error-msg');
     const emptyEl  = document.getElementById('gallery-empty');
 
+    const lightbox      = document.getElementById('gallery-lightbox') as HTMLDialogElement;
+    const lightboxImg    = lightbox.querySelector('.lightbox-img') as HTMLImageElement;
+    const lightboxSpinner = lightbox.querySelector('.lightbox-spinner') as HTMLElement;
+    const lightboxErrorEl = lightbox.querySelector('.lightbox-error') as HTMLElement;
+
     const thumb = (id: string) => `https://drive.google.com/thumbnail?id=${id}&sz=w600`;
     const full  = (id: string) => `https://drive.google.com/thumbnail?id=${id}&sz=w1600`;
+
+    // Astro scopes <style> rules to elements bearing this attribute.
+    // Elements created here at runtime need it applied manually.
+    const scopeAttr = grid?.getAttributeNames().find(n => n.startsWith('data-astro-cid-'));
+
+    let photos: { id: string; name: string }[] = [];
+    let currentIndex = 0;
+    // Photos that already proved they load fine as a thumbnail — skip the
+    // network entirely and reuse the browser-cached <img> element itself.
+    const thumbCache = new Map<string, HTMLImageElement>();
+
+    function preload(id: string, src: string) {
+      const img = new Image();
+      img.referrerPolicy = 'no-referrer';
+      img.src = src;
+      return img;
+    }
+
+    function showPhoto(index: number) {
+      currentIndex = (index + photos.length) % photos.length;
+      const photo = photos[currentIndex];
+      const requestedIndex = currentIndex;
+
+      lightboxErrorEl.hidden = true;
+
+      const cached = thumbCache.get(photo.id);
+      if (cached?.complete && cached.naturalWidth > 0) {
+        lightboxSpinner.hidden = true;
+        lightboxImg.src = cached.src;
+        lightboxImg.hidden = false;
+      } else {
+        lightboxSpinner.hidden = false;
+        lightboxImg.hidden = true;
+        lightboxImg.src = thumb(photo.id);
+      }
+      lightboxImg.alt = photo.name;
+
+      // Upgrade to full resolution in the background. Google's Drive
+      // thumbnail CDN is a hotlinking hack, not an official API, and
+      // intermittently fails — if it does, we just keep showing the
+      // thumbnail rather than retrying and making the user wait.
+      const hi = preload(photo.id, full(photo.id));
+      hi.addEventListener('load', () => {
+        if (currentIndex === requestedIndex) {
+          lightboxSpinner.hidden = true;
+          lightboxImg.hidden = false;
+          lightboxImg.src = hi.src;
+        }
+      });
+
+      // Warm the browser cache for the neighbors so prev/next feels instant.
+      [1, -1].forEach(delta => {
+        const neighbor = photos[(currentIndex + delta + photos.length) % photos.length];
+        if (neighbor && neighbor.id !== photo.id) preload(neighbor.id, full(neighbor.id));
+      });
+    }
+
+    function openLightbox(index: number) {
+      showPhoto(index);
+      if (!lightbox.open) lightbox.showModal();
+    }
+
+    lightboxImg.addEventListener('load', () => {
+      lightboxSpinner.hidden = true;
+      lightboxErrorEl.hidden = true;
+      lightboxImg.hidden = false;
+    });
+
+    lightboxImg.addEventListener('error', () => {
+      lightboxSpinner.hidden = true;
+      lightboxImg.hidden = true;
+      lightboxErrorEl.hidden = false;
+    });
+
+    lightbox.querySelector('.lightbox-close')!.addEventListener('click', () => lightbox.close());
+    lightbox.querySelector('.lightbox-prev')!.addEventListener('click', () => showPhoto(currentIndex - 1));
+    lightbox.querySelector('.lightbox-next')!.addEventListener('click', () => showPhoto(currentIndex + 1));
+
+    // Clicking the backdrop (the <dialog> element itself, not its content) closes it.
+    lightbox.addEventListener('click', (e) => {
+      if (e.target === lightbox) lightbox.close();
+    });
+
+    lightbox.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') showPhoto(currentIndex - 1);
+      if (e.key === 'ArrowRight') showPhoto(currentIndex + 1);
+    });
 
     async function loadPhotos() {
       try {
@@ -115,31 +216,48 @@ const driveUrl = FOLDER_ID
           return;
         }
 
-        files.forEach(file => {
+        photos = files;
+
+        files.forEach((file, index) => {
           const a = document.createElement('a');
           a.href = full(file.id);
-          a.className = 'glightbox photo-item';
-          a.dataset.gallery = 'trip-photos';
-          a.dataset.type = 'image';
-          a.dataset.title = file.name;
+          a.className = 'photo-item';
 
           const img = document.createElement('img');
           img.src = thumb(file.id);
           img.alt = file.name;
           img.loading = 'lazy';
+          img.referrerPolicy = 'no-referrer';
+          thumbCache.set(file.id, img);
+
+          // Same flaky-CDN retry as the lightbox image; a thumbnail has no
+          // smaller fallback, so a permanent failure just removes the tile.
+          img.addEventListener('error', () => {
+            const attempt = Number(img.dataset.retry ?? '0');
+            if (attempt < 2) {
+              img.dataset.retry = String(attempt + 1);
+              const retryUrl = new URL(img.src);
+              retryUrl.searchParams.set('_retry', String(Date.now()));
+              setTimeout(() => { img.src = retryUrl.toString(); }, 600 * (attempt + 1));
+              return;
+            }
+            a.remove();
+          });
+
+          if (scopeAttr) {
+            a.setAttribute(scopeAttr, '');
+            img.setAttribute(scopeAttr, '');
+          }
 
           a.appendChild(img);
+          a.addEventListener('click', (e) => {
+            e.preventDefault();
+            openLightbox(index);
+          });
           grid!.appendChild(a);
         });
 
         grid!.hidden = false;
-
-        GLightbox({
-          selector: '.glightbox',
-          touchNavigation: true,
-          loop: true,
-          autoplayVideos: false,
-        });
 
       } catch (err: any) {
         loading!.hidden = true;
@@ -204,26 +322,27 @@ const driveUrl = FOLDER_ID
 
   /* ── Photo grid ── */
   .photo-grid {
-    columns: 4 200px;
-    column-gap: 0.6rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 0.5rem;
     max-width: 1100px;
     margin: 0 auto 3rem;
   }
 
   @media (max-width: 600px) {
-    .photo-grid { columns: 2 140px; }
+    .photo-grid { grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); }
   }
 
   .photo-item {
     display: block;
-    break-inside: avoid;
-    margin-bottom: 0.6rem;
+    aspect-ratio: 1 / 1;
     overflow: hidden;
     position: relative;
   }
 
   .photo-item img {
     width: 100%;
+    height: 100%;
     display: block;
     object-fit: cover;
     transition: transform 0.4s ease, filter 0.3s ease;
@@ -331,5 +450,90 @@ const driveUrl = FOLDER_ID
     color: var(--color-mid);
     font-family: var(--font-sans);
     letter-spacing: 0.04em;
+  }
+
+  /* ── Lightbox ── */
+  .lightbox {
+    border: none;
+    padding: 0;
+    margin: 0;
+    max-width: 100vw;
+    max-height: 100vh;
+    width: 100vw;
+    height: 100vh;
+    background: transparent;
+  }
+
+  .lightbox::backdrop {
+    background: rgba(10, 8, 6, 0.92);
+  }
+
+  .lightbox-body {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .lightbox-img {
+    max-width: 92vw;
+    max-height: 90vh;
+    object-fit: contain;
+  }
+
+  .lightbox-spinner {
+    width: 40px;
+    height: 40px;
+    border: 2px solid rgba(255, 255, 255, 0.25);
+    border-top-color: var(--color-cream);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  .lightbox-error {
+    color: var(--color-cream);
+    font-family: var(--font-sans);
+    font-size: 0.9rem;
+    text-align: center;
+    max-width: 320px;
+    padding: 0 1rem;
+  }
+
+  .lightbox-close,
+  .lightbox-nav {
+    position: absolute;
+    z-index: 1;
+    background: transparent;
+    border: none;
+    color: var(--color-cream);
+    cursor: pointer;
+    line-height: 1;
+  }
+
+  .lightbox-close {
+    top: 1rem;
+    right: 1.25rem;
+    font-size: 1.5rem;
+    padding: 0.5rem;
+  }
+
+  .lightbox-nav {
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 3rem;
+    padding: 0.5rem 1rem;
+    opacity: 0.75;
+    transition: opacity 0.2s ease;
+  }
+
+  .lightbox-nav:hover { opacity: 1; }
+
+  .lightbox-prev { left: 0.5rem; }
+  .lightbox-next { right: 0.5rem; }
+
+  @media (max-width: 600px) {
+    .lightbox-nav { font-size: 2.2rem; padding: 0.4rem 0.6rem; }
   }
 </style>
