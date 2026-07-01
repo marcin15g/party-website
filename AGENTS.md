@@ -29,7 +29,7 @@ The preview server launch config lives in `.claude/launch.json` and uses the ful
 | Framework | Astro 4.x (static, no SSR) |
 | Styling | Plain CSS with custom properties — no Tailwind |
 | Scroll animations | AOS (Animate On Scroll) — installed via npm, imported as ES module |
-| Photo lightbox | GLightbox — installed via npm |
+| Photo lightbox | Custom, built on the native `<dialog>` element — no dependency |
 | Maps | Google Maps embed iframe (no API key needed) |
 | Photo gallery | Google Drive API v3 (client-side, API key only — no OAuth) |
 | Fonts | Google Fonts: Playfair Display (serif/headings) + Lato (sans/body) |
@@ -106,9 +106,16 @@ Each card shows a thumbnail image and day name. Clicking opens a **modal overlay
 Darkest background. Two-column layout: left is a categorised packing list (Dokumenty, Bagaż, Plaża & Słońce, Finanse & Elektronika, Na wszelki wypadek) with diamond bullet points; right is a hand-drawn SVG suitcase illustration (`viewBox="0 0 320 380"`) drawn using the site colour palette — wine-red body, dusty-rose accents, cream label and sticker. The SVG has a "Split 2026" circular sticker and "bon voyage" italic text. Edit the `items` array in the frontmatter to change the list.
 
 ### 7 · Gallery — `Gallery.astro`
-Cream background. Fetches photos from a **public Google Drive folder** using the Drive API v3 at runtime in the browser (client-side JS, no backend). Displays them in a CSS `columns` masonry grid. Clicking a photo opens a **GLightbox** lightbox.
+Cream background. Fetches photos from a **public Google Drive folder** using the Drive API v3 at runtime in the browser (client-side JS, no backend). Displays them as small square thumbnails in a CSS `grid` (`repeat(auto-fill, minmax(100px, 1fr))`, `aspect-ratio: 1/1`). Clicking a thumbnail opens a **custom lightbox** built on the native `<dialog>` element (no library dependency — GLightbox was removed; see below).
 
-**Important Astro pattern used here:** `define:vars` cannot be combined with ES module `import` statements (breaks with "Cannot use import statement outside a module"). The workaround: API key and folder ID are rendered into `data-api-key` / `data-folder-id` attributes on a hidden `<div id="gallery-config">`, then read from the DOM inside a regular `<script>` (which Astro bundles as a proper ES module). Each lightbox anchor must have `data-type="image"` — without it, GLightbox treats the Google Drive thumbnail URL as a webpage (no file extension to infer from).
+**Important Astro pattern used here:** `define:vars` cannot be combined with ES module `import` statements (breaks with "Cannot use import statement outside a module"). The workaround: API key and folder ID are rendered into `data-api-key` / `data-folder-id` attributes on a hidden `<div id="gallery-config">`, then read from the DOM inside a regular `<script>` (which Astro bundles as a proper ES module).
+
+**Elements created at runtime need Astro's scope attribute manually.** Astro scopes `<style>` rules to elements bearing a generated `data-astro-cid-*` attribute, which the compiler only adds to elements written in the template — not to elements created later with `document.createElement`. The grid's `<a>`/`<img>` tiles are built in the `<script>`, so the code reads the scope attribute off `#gallery-grid` at runtime and copies it onto each created element; skip this and the `.photo-item` CSS silently never applies. The `<dialog>` and its buttons don't need this since they're written directly in the template.
+
+**Lightbox implementation notes:**
+- The dialog markup order matters: `.lightbox-body` (which fills the whole dialog) is written *after* the nav/close buttons in the DOM, and since both the buttons (`position: absolute`) and the body (`position: relative`) are positioned elements, later-in-DOM paints on top — without `z-index: 1` on the buttons, `.lightbox-body` visually sits underneath but still wins hit-testing and silently swallows every click on the nav arrows.
+- Opening a photo shows the already-cached grid thumbnail instantly (no spinner, no new network call), then upgrades to the full-resolution image in the background, and preloads both neighbors' full-size images so prev/next is typically an instant, zero-network switch.
+- Google's `drive.google.com/thumbnail?id=...&sz=wNNN` endpoint is a hotlinking trick, not an official API, and intermittently fails (`net::ERR_BLOCKED_BY_ORB` in Chrome) for the exact URL that worked moments before — worse under rapid repeated requests (looks like informal rate limiting). Both the grid thumbnails and the lightbox's background upgrade retry a couple of times with a cache-busting query param before giving up; the lightbox never blocks on this since the thumbnail is already showing.
 
 **Environment variables** (in `.env`, never committed):
 ```

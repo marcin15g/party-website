@@ -1,0 +1,63 @@
+---
+interface Props {
+  class?: string;
+}
+
+const { class: className = '' } = Astro.props;
+---
+
+<div class={`ornate-frame ${className}`}>
+  <div class="ornate-frame__photo">
+    <slot />
+  </div>
+  <img class="ornate-frame__border" src="/frame.png" alt="" aria-hidden="true" />
+</div>
+
+<style>
+  /* frame.png is a square photo of a real gilt frame; the frame is rendered
+     at its native aspect ratio (never stretched) and the photo is positioned
+     to sit exactly inside the frame's inner cutout (measured from the PNG's
+     alpha channel), so the ornate carving is never distorted. */
+  .ornate-frame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+  }
+
+  .ornate-frame__border {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    pointer-events: none;
+    z-index: 2;
+    filter: drop-shadow(0 16px 30px rgba(15, 8, 4, 0.5)) drop-shadow(0 3px 8px rgba(15, 8, 4, 0.32));
+  }
+
+  .ornate-frame__photo {
+    position: absolute;
+    top: 19.5%;
+    right: 25.4%;
+    bottom: 21%;
+    left: 24.5%;
+    overflow: hidden;
+    background: #180d08;
+  }
+
+  .ornate-frame__photo::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    box-shadow: inset 0 0 26px 6px rgba(0, 0, 0, 0.4);
+    pointer-events: none;
+  }
+
+  .ornate-frame__photo :global(img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: sepia(20%) saturate(1.05) contrast(1.02);
+  }
+</style>
