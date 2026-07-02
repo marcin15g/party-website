@@ -1,0 +1,187 @@
+---
+const links = [
+  { id: 'countdown', label: 'Start' },
+  { id: 'participants', label: 'Uczestniczki' },
+  { id: 'location', label: 'Lokalizacja' },
+  { id: 'flights', label: 'Loty' },
+  { id: 'plan', label: 'Plan' },
+  { id: 'essentials', label: 'Niezbędnik' },
+  { id: 'gallery', label: 'Galeria' },
+];
+---
+
+<nav class="floating-nav" id="floating-nav" aria-label="Nawigacja sekcji">
+  <ul class="nav-list">
+    {links.map((link) => (
+      <li>
+        <a href={`#${link.id}`} data-target={link.id}>{link.label}</a>
+      </li>
+    ))}
+  </ul>
+  <button
+    class="nav-toggle"
+    id="nav-toggle"
+    aria-expanded="false"
+    aria-controls="floating-nav"
+    aria-label="Otwórz menu nawigacji"
+  >
+    <span class="bar"></span>
+    <span class="bar"></span>
+    <span class="bar"></span>
+  </button>
+</nav>
+
+<script>
+  const nav = document.getElementById('floating-nav');
+  const toggle = document.getElementById('nav-toggle');
+  const links = document.querySelectorAll<HTMLAnchorElement>('.nav-list a');
+
+  toggle?.addEventListener('click', () => {
+    const isOpen = nav?.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', String(!!isOpen));
+    toggle.setAttribute('aria-label', isOpen ? 'Zamknij menu nawigacji' : 'Otwórz menu nawigacji');
+  });
+
+  links.forEach((link) => {
+    link.addEventListener('click', () => {
+      nav?.classList.remove('open');
+      toggle?.setAttribute('aria-expanded', 'false');
+      toggle?.setAttribute('aria-label', 'Otwórz menu nawigacji');
+    });
+  });
+
+  document.addEventListener('click', (e) => {
+    if (nav && !nav.contains(e.target as Node)) {
+      nav.classList.remove('open');
+      toggle?.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  const sections = Array.from(links)
+    .map((link) => document.getElementById(link.dataset.target ?? ''))
+    .filter((el): el is HTMLElement => el !== null);
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          links.forEach((link) => {
+            link.classList.toggle('active', link.dataset.target === entry.target.id);
+          });
+        }
+      });
+    },
+    { rootMargin: '-45% 0px -45% 0px', threshold: 0 }
+  );
+
+  sections.forEach((section) => observer.observe(section));
+</script>
+
+<style>
+  .floating-nav {
+    position: fixed;
+    right: 1.25rem;
+    bottom: 1.25rem;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.75rem;
+  }
+
+  .nav-toggle {
+    order: 2;
+    width: 56px;
+    height: 56px;
+    flex-shrink: 0;
+    border: none;
+    border-radius: 50%;
+    background: var(--color-dark);
+    box-shadow: 0 4px 18px rgba(26, 20, 18, 0.35);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .nav-toggle:hover {
+    box-shadow: 0 6px 22px rgba(26, 20, 18, 0.45);
+  }
+
+  .bar {
+    width: 22px;
+    height: 2px;
+    background: var(--color-cream);
+    border-radius: 2px;
+    transition: transform 0.25s ease, opacity 0.25s ease;
+  }
+
+  .open .nav-toggle .bar:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+
+  .open .nav-toggle .bar:nth-child(2) {
+    opacity: 0;
+  }
+
+  .open .nav-toggle .bar:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+
+  .nav-list {
+    order: 1;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.6rem;
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    transform-origin: bottom right;
+  }
+
+  .open .nav-list {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+  }
+
+  .nav-list a {
+    display: inline-block;
+    padding: 0.5rem 1.1rem;
+    border-radius: 999px;
+    background: var(--color-cream);
+    color: var(--color-dark);
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 0.9rem;
+    letter-spacing: 0.03em;
+    text-decoration: none;
+    white-space: nowrap;
+    box-shadow: 0 3px 12px rgba(26, 20, 18, 0.25);
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+
+  .nav-list a.active,
+  .nav-list a:hover {
+    background: var(--color-dark);
+    color: var(--color-cream);
+  }
+
+  @media (max-width: 480px) {
+    .floating-nav {
+      right: 1rem;
+      bottom: 1rem;
+    }
+
+    .nav-toggle {
+      width: 50px;
+      height: 50px;
+    }
+  }
+</style>

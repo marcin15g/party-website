@@ -57,7 +57,7 @@ Defined in `src/layouts/Layout.astro` under `<style is:global>`.
 ```
 src/
   layouts/
-    Layout.astro          ← HTML shell, Google Fonts, AOS init
+    Layout.astro          ← HTML shell, Google Fonts, AOS init, mounts FloatingNav
   components/
     Countdown.astro       ← Section 1
     Participants.astro    ← Section 2
@@ -66,6 +66,7 @@ src/
     Plan.astro            ← Section 5
     Essentials.astro      ← Section 6
     Gallery.astro         ← Section 7
+    FloatingNav.astro     ← Fixed bottom-right jump-to-section menu
   pages/
     index.astro           ← Imports and mounts all components in order
 public/
@@ -125,6 +126,12 @@ PUBLIC_DRIVE_FOLDER_ID=1BxiMV...
 Astro exposes `PUBLIC_*` vars to client-side scripts automatically. The folder must be shared as "Anyone with the link can view" in Google Drive for the API key (no OAuth) to work.
 
 The section also renders an "Otwórz folder Google Drive" button linking directly to the folder, so participants can add photos from their phones.
+
+---
+
+## Floating nav — `FloatingNav.astro`
+
+Fixed circle button, bottom-right, rendered once in `Layout.astro` (so it appears on every page). Hardcodes a `links` array of `{ id, label }` pairs matching each section's `id` (`countdown`, `participants`, `location`, `flights`, `plan`, `essentials`, `gallery`) with Polish labels. Clicking the button toggles a stack of pill-shaped anchor links above it (CSS opacity/transform transition, no JS animation library). Clicking a link or clicking outside the nav closes it. An `IntersectionObserver` (rootMargin `-45% 0px -45% 0px`) tracks which section is centered in the viewport and toggles `.active` on the matching link. Smooth scrolling to the anchor comes for free from the global `html { scroll-behavior: smooth; }` rule in `Layout.astro`.
 
 ---
 
