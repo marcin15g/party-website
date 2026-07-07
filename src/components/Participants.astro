@@ -134,4 +134,25 @@ const participants = [
     font-style: italic;
     letter-spacing: 0.05em;
   }
+
+  /* ── Mobile: force 2 columns ── */
+  @media (max-width: 600px) {
+    .participants-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      justify-items: stretch;
+      gap: 1.5rem 1rem;
+    }
+
+    .participant-frame {
+      width: 100%;
+    }
+
+    /* Lone last participant (odd total) spans both columns, centered at the same size as the rest */
+    .participant:last-child:nth-child(odd) {
+      grid-column: 1 / -1;
+      width: calc(50% - 0.5rem);
+      justify-self: center;
+    }
+  }
 </style>
