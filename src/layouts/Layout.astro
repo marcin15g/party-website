@@ -18,6 +18,7 @@ const { title } = Astro.props;
       href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap"
       rel="stylesheet"
     />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥂</text></svg>" />
   </head>
   <body>
     <slot />
@@ -56,6 +57,14 @@ const { title } = Astro.props;
 
   html {
     scroll-behavior: smooth;
+  }
+
+  /* AOS leaves translateZ(0) on .aos-animate elements which creates a stacking
+     context that clips filter:drop-shadow on children in Safari/WebKit.
+     Resetting to none removes the stacking context without breaking the animation
+     (browsers still interpolate from the initial translate to none correctly). */
+  [data-aos^=fade].aos-animate {
+    transform: none !important;
   }
 
   body {
