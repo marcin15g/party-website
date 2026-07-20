@@ -17,7 +17,7 @@ const participants = [
 
 <section class="participants-section" id="participants">
   <!-- Bride -->
-  <div class="bride-wrapper" data-aos="fade-up">
+  <div class="bride-wrapper">
     <p class="section-label">PANNA MŁODA</p>
     <div class="bride-frame">
       <OrnateFrame>
@@ -34,7 +34,7 @@ const participants = [
   <!-- Participants grid -->
   <div class="participants-grid">
     {participants.map((p, i) => (
-      <div class="participant" data-aos="fade-up" data-aos-delay={i * 80}>
+      <div class="participant">
         <div class="participant-frame">
           <OrnateFrame>
             <img src={p.img} alt={p.name} />
