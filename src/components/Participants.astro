@@ -3,15 +3,15 @@ import OrnateFrame from './OrnateFrame.astro';
 
 const bride = {
   name: 'Panna Młoda',
-  img: 'https://placehold.co/320x400/E6CFA9/9A3F3F?text=Panna+Młoda',
+  img: '/images/bride.jpg',
 };
 
 const participants = [
-  { name: 'Uczestniczka 1', img: 'https://placehold.co/260x320/E6CFA9/9A3F3F?text=1' },
-  { name: 'Uczestniczka 2', img: 'https://placehold.co/260x320/E6CFA9/9A3F3F?text=2' },
-  { name: 'Uczestniczka 3', img: 'https://placehold.co/260x320/E6CFA9/9A3F3F?text=3' },
-  { name: 'Uczestniczka 4', img: 'https://placehold.co/260x320/E6CFA9/9A3F3F?text=4' },
-  { name: 'Uczestniczka 5', img: 'https://placehold.co/260x320/E6CFA9/9A3F3F?text=5' },
+  { name: 'Ola', img: '/images/participant-1.jpg' },
+  { name: 'Wiktoria', img: '/images/participant-2.jpg' },
+  { name: 'Basia', img: '/images/participant-3.jpg' },
+  { name: 'Tosia', img: '/images/participant-4.jpg' },
+  { name: 'Agnieszka', img: '/images/participant-5.jpg' },
 ];
 ---
 
@@ -60,12 +60,13 @@ const participants = [
   /* ── Section label ── */
   .section-label {
     font-family: var(--font-serif);
-    font-size: clamp(1rem, 2.5vw, 1.4rem);
+    font-size: clamp(1rem, 4vw, 2rem);
     letter-spacing: 0.3em;
     color: var(--color-mid);
     text-align: center;
     margin-bottom: 1.2rem;
     font-style: italic;
+    font-weight: bold;
   }
 
   /* ── Bride frame ── */
@@ -129,7 +130,7 @@ const participants = [
 
   .participant-name {
     font-family: var(--font-serif);
-    font-size: 0.95rem;
+    font-size: 1.25rem;
     color: var(--color-dark);
     font-style: italic;
     letter-spacing: 0.05em;

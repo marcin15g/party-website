@@ -1,25 +1,25 @@
 ---
 const flights = {
   outbound: {
-    from: { code: 'WAW', city: 'Warszawa', airport: 'Lotnisko Chopina' },
+    from: { code: 'KRK', city: 'Kraków', airport: 'Lotnisko im. Jana Pawła II' },
     to:   { code: 'SPU', city: 'Split', airport: 'Lotnisko Split' },
-    date: 'TBD – Wrzesień 2026',
-    departure: '--:--',
-    arrival:   '--:--',
+    date: '11 Wrzesień 2026',
+    departure: '19:20',
+    arrival:   '20:55',
   },
   return: {
     from: { code: 'SPU', city: 'Split', airport: 'Lotnisko Split' },
-    to:   { code: 'WAW', city: 'Warszawa', airport: 'Lotnisko Chopina' },
-    date: 'TBD – Wrzesień 2026',
-    departure: '--:--',
-    arrival:   '--:--',
+    to:   { code: 'KRK', city: 'Kraków', airport: 'Lotnisko im. Jana Pawła II' },
+    date: '14 Wrzesień 2026',
+    departure: '21:40',
+    arrival:   '23:20',
   },
 };
 
 // September 2026: starts on Tuesday (index 1, Mon=0)
 const startOffset = 1;
 const daysInMonth = 30;
-const highlightedDays = new Set([18, 19, 20, 21]);
+const highlightedDays = new Set([11, 12, 13, 14]);
 const dayNames = ['Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'Sb', 'Nd'];
 
 type CalCell = { day: number | null; highlighted: boolean };
